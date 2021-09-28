@@ -1,0 +1,119 @@
+package com.mygdx.game;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+
+import java.nio.file.LinkPermission;
+
+public class Tank {
+    private MyGdxGame game;
+    private Texture texture;
+    //стандартный вектор libGDX
+    private Vector2 position;
+//    private float x;
+//    private float y;
+    private float speed;
+    private float angle;
+
+//    private Texture textureTurret;
+    private float angleTurret;
+    private float fireTimer;
+
+    private int height;
+    private int width;
+
+    private Weapon weapon;
+
+    public Tank (MyGdxGame game) {
+        this.game = game;
+        this.texture = new Texture("player_tank_base.png");
+//        this.textureTurret = new Texture("simple_weapon.png");
+
+        this.position = new Vector2(100.0f, 100.0f);
+//        this.x = 0.0f;
+//        this.y = 0.0f;
+        this.speed = 100.0f; // px за секунду
+
+        this.height = this.texture.getHeight();
+        this.width = this.texture.getWidth();
+
+        this.weapon = new Weapon();
+    }
+
+    public void render (SpriteBatch batch) {
+        //tank
+        batch.draw(texture, position.x - this.width / 2, position.y - this.height / 2, this.width / 2, this.height / 2, this.width, this.height, 1, 1, this.angle, 0, 0, this.width, this.height, false, false);
+
+        // turret
+        batch.draw(this.weapon.getTexture(), position.x - this.width / 2, position.y - this.height / 2, this.width / 2, this.height / 2, this.width, this.height, 1, 1, this.angleTurret, 0, 0, this.width, this.height, false, false);
+//        batch.draw(textureTurret, position.x-16, position.y-16, 16, 16, 32, 32, 1, 1, angleTurret, 0, 0, 32, 32, false, false);
+//        batch.draw(texture, x-16, y-16, 16, 16, 32, 32, 1, 1, angle, 0, 0, 32, 32, false, false);
+    }
+
+    public void update (float dt) {
+        // если нужно двигаться по диагонали,
+        // то просто в if каждое выражение, без else if
+        if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
+            this.position.x -= this.speed * dt;
+            this.angle = 180.0f;
+        }
+        else if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
+            this.position.x += this.speed * dt;
+            this.angle = 0.0f;
+        }
+        else if(Gdx.input.isKeyPressed(Input.Keys.UP)){
+            this.position.y += this.speed * dt;
+            this.angle = 90.0f;
+        }
+        else if(Gdx.input.isKeyPressed(Input.Keys.DOWN)){
+            this.position.y -= this.speed * dt;
+            this.angle = 270.0f;
+        }
+
+        // куда направлена мышка (у нее оконные, а не игровые координаты, x совпадает, а y нет, ноль в окне сверху слева, а в игре снизу слева)...
+        // возьмем и перевернем координаты из оконных в игровые
+//        float mouseX = Gdx.input.getX();
+//        float mouseY = Gdx.input.getY();
+
+        float mouseX = Gdx.input.getX();
+        float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
+
+        // чему равен угол между турелью и мышкой
+        float angleTo = Utils.getAngle(position.x, position.y, mouseX, mouseY);
+        angleTurret = Utils.makeRotation(angleTurret, angleTo, 180.0f, dt);
+        angleTurret = Utils.angleToFromNegPiToPosPi(angleTurret);
+
+        // нажатие пробела для выстрела
+//        if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+//            this.fire();
+//        }
+
+        // нажатие кнопка мыши для выстрела (клик)
+//        if(Gdx.input.justTouched()) {
+//            this.fire();
+//        }
+        // нажатие кнопка мыши для выстрела и не бросаем (зажатие кнопки)
+        if(Gdx.input.isTouched()) {
+            this.fire(dt);
+        }
+    }
+
+    public void fire (float dt) {
+        this.fireTimer += dt;
+
+        if(this.fireTimer >= this.weapon.getFirePeriod()) {
+            this.fireTimer = 0.0f;
+            float angleRadian = (float) Math.toRadians(this.angleTurret);
+            this.game.getBulletEmitter().activate(this.position.x, this.position.y, 320.0f * (float) Math.cos(angleRadian), 320.0f *(float) Math.sin(angleRadian), this.weapon.getDamage());
+        }
+//        if (!this.game.getBullet().isActive()) {
+//            float angleRadian = (float) Math.toRadians(this.angleTurret);
+////            float angleRadian = (float) Math.toRadians(this.angle);
+//            this.game.getBullet().activate(this.position.x, this.position.y, 320.0f * (float) Math.cos(angleRadian), 320.0f *(float) Math.sin(angleRadian));
+//        }
+    }
+
+}

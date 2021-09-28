@@ -1,0 +1,67 @@
+package com.mygdx.game;
+
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
+public class MyGdxGame extends ApplicationAdapter {
+	private Map map;
+	private SpriteBatch batch;
+	private Tank tank;
+//	private Bullet bullet;
+	private BulletEmitter bulletEmitter;
+
+//	public Bullet getBullet() {
+//		return this.bullet;
+//	}
+
+
+	public BulletEmitter getBulletEmitter() {
+		return this.bulletEmitter;
+	}
+
+	@Override
+	public void create () {
+		this.map = new Map();
+		this.batch = new SpriteBatch();
+		this.tank = new Tank(this);
+//		bullet = new Bullet();
+		this.bulletEmitter = new BulletEmitter();
+	}
+
+	@Override
+	public void render () {
+		// сколько времени с прошлой отрисовки прошло
+		float dt = Gdx.graphics.getDeltaTime();
+
+		this.update(dt);
+
+		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		batch.begin();
+		this.map.render(batch);
+		this.tank.render(batch);
+		this.bulletEmitter.render(batch);
+//		if(bullet.isActive()) {
+//			bullet.render(batch);
+//		}
+		batch.end();
+	}
+
+	public void update (float dt) {
+
+		this.tank.update(dt);
+		this.bulletEmitter.update(dt);
+//		if(bullet.isActive()) {
+//			bullet.update(dt);
+//		}
+	}
+	
+	@Override
+	public void dispose () {
+		batch.dispose();
+	}
+}
